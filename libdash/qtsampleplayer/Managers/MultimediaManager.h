@@ -21,6 +21,8 @@
 #include "../Renderer/QTAudioRenderer.h"
 #include "../libdashframework/Portable/MultiThreading.h"
 #include "../libdashframework/Buffer/AudioChunk.h"
+#include "../libdashframework/helpers/LogElement.h"
+#include "../libdashframework/Input/Logger.h"
 #include <QtMultimedia/qaudiooutput.h>
 
 namespace sampleplayer
@@ -37,6 +39,8 @@ namespace sampleplayer
                 void                Start   ();
                 void                Stop    ();
                 dash::mpd::IMPD*    GetMPD  ();
+                const std::vector<libdash::framework::helpers::LogElement *> & getLogs() const;
+                const std::vector<libdash::framework::helpers::LogElement *> & getRateLogs() const;
 
                 bool SetVideoQuality      (dash::mpd::IPeriod* period, dash::mpd::IAdaptationSet *adaptationSet, dash::mpd::IRepresentation *representation);
                 bool SetAudioQuality      (dash::mpd::IPeriod* period, dash::mpd::IAdaptationSet *adaptationSet, dash::mpd::IRepresentation *representation);
@@ -49,10 +53,11 @@ namespace sampleplayer
                 void SetFrameRate               (double frameRate);
 
                 /* IStreamObserver */
-                void OnSegmentDownloaded        ();
+                void OnSegmentDownloaded        (uint32_t downloadRate);
                 void OnSegmentBufferStateChanged(StreamType type, uint32_t fillstateInPercent);
                 void OnVideoBufferStateChanged  (uint32_t fillstateInPercent);
                 void OnAudioBufferStateChanged  (uint32_t fillstateInPercent);
+                void OnRateChanged 				(int segmentNumber, uint32_t downloadRate);
 
 
 
@@ -76,6 +81,7 @@ namespace sampleplayer
                 uint64_t                                                    segmentsDownloaded;
                 CRITICAL_SECTION                                            monitorMutex;
                 double                                                      frameRate;
+                libdash::framework::input::Logger							*logger;
 
                 THREAD_HANDLE                                               videoRendererHandle;
                 THREAD_HANDLE                                               audioRendererHandle;
@@ -101,6 +107,8 @@ namespace sampleplayer
                 void NotifyVideoSegmentBufferObservers  (uint32_t fillstateInPercent);
                 void NotifyAudioBufferObservers         (uint32_t fillstateInPercent);
                 void NotifyAudioSegmentBufferObservers  (uint32_t fillstateInPercent);
+                void NotifySegmentDownloaded            (uint32_t downloadRate); //added
+                void NotifyRateChanged					(int segmentNumber, uint32_t downloadRate);
         };
     }
 }

@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "DASHReceiver.h"
+#include <iostream>
 
 using namespace libdash::framework::input;
 using namespace libdash::framework::buffer;
@@ -86,7 +87,7 @@ MediaObject*                DASHReceiver::GetNextSegment            ()
 
     if (seg != NULL)
     {
-        MediaObject *media = new MediaObject(seg, this->representation);
+        MediaObject *media = new MediaObject(seg, this->representation, this);
         this->segmentNumber++;
         return media;
     }
@@ -104,7 +105,7 @@ MediaObject*                DASHReceiver::GetSegment                (uint32_t se
 
     if (seg != NULL)
     {
-        MediaObject *media = new MediaObject(seg, this->representation);
+        MediaObject *media = new MediaObject(seg, this->representation, this);
         return media;
     }
 
@@ -118,7 +119,7 @@ MediaObject*                DASHReceiver::GetInitSegment            ()
 
     if (seg != NULL)
     {
-        MediaObject *media = new MediaObject(seg, this->representation);
+        MediaObject *media = new MediaObject(seg, this->representation, this);
         return media;
     }
 
@@ -203,10 +204,20 @@ uint32_t                    DASHReceiver::CalculateSegmentOffset    ()
 
     return (startSegNum > firstSegNum) ? startSegNum : firstSegNum;
 }
-void                        DASHReceiver::NotifySegmentDownloaded   ()
+void                        DASHReceiver::NotifySegmentDownloaded   (uint32_t downloadRate)
 {
-    this->observer->OnSegmentDownloaded();
+    this->observer->OnSegmentDownloaded(downloadRate);
 }
+
+void                        DASHReceiver::NotifyDownloadRateChanged   (uint64_t bytesDownloaded)
+{
+    this->observer->OnDownloadRateChanged(bytesDownloaded);
+}
+
+void						DASHReceiver::OnDownloadRateChanged(uint64_t bytesDownloaded){
+	this->NotifyDownloadRateChanged(bytesDownloaded);
+}
+
 void                        DASHReceiver::DownloadInitSegment    (IRepresentation* rep)
 {
     if (this->InitSegmentExists(rep))
@@ -232,6 +243,9 @@ bool                        DASHReceiver::InitSegmentExists      (IRepresentatio
 /* Thread that does the buffering of segments */
 void*                       DASHReceiver::DoBuffering               (void *receiver)
 {
+	uint64_t startTime;//, downloaded;
+	int duration;
+	uint32_t downloadRate;
     DASHReceiver *dashReceiver = (DASHReceiver *) receiver;
 
     dashReceiver->DownloadInitSegment(dashReceiver->GetRepresentation());
@@ -242,12 +256,22 @@ void*                       DASHReceiver::DoBuffering               (void *recei
     {
         media->StartDownload();
 
+
+
         if (!dashReceiver->buffer->PushBack(media))
             return NULL;
 
+        //startTime = libdash::framework::helpers::Time::GetCurrentUTCTimeInMilliSec();
         media->WaitFinished();
+        //duration = libdash::framework::helpers::Time::GetCurrentUTCTimeInMilliSec() - startTime;
 
-        dashReceiver->NotifySegmentDownloaded();
+        //std::cout << "duration " << duration << std::endl;
+
+        downloadRate = (uint32_t)media->GetDownloaded() ;/// (duration/1000.0);
+
+        //std::cout << "rate " << downloadRate << " " << media->GetDownloaded() << std::endl;
+
+        dashReceiver->NotifySegmentDownloaded(downloadRate); //added argument
 
         media = dashReceiver->GetNextSegment();
     }

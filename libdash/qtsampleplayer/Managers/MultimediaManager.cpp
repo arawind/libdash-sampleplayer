@@ -13,6 +13,8 @@
 
 using namespace libdash::framework::adaptation;
 using namespace libdash::framework::buffer;
+using namespace libdash::framework::helpers;
+using namespace libdash::framework::input;
 using namespace sampleplayer::managers;
 using namespace sampleplayer::renderer;
 using namespace dash::mpd;
@@ -41,6 +43,7 @@ MultimediaManager::MultimediaManager            (QTGLRenderer *videoElement, QTA
     InitializeCriticalSection (&this->monitorMutex);
 
     this->manager = CreateDashManager();
+    this->logger  = new Logger();
     av_register_all();
 }
 MultimediaManager::~MultimediaManager           ()
@@ -54,6 +57,14 @@ MultimediaManager::~MultimediaManager           ()
 IMPD*   MultimediaManager::GetMPD                           ()
 {
     return this->mpd;
+}
+const std::vector<LogElement *> & MultimediaManager::getLogs() const {
+
+	return this->videoStream->getLogs();
+}
+const std::vector<LogElement *> & MultimediaManager::getRateLogs() const {
+
+	return this->logger->getLogs();
 }
 bool    MultimediaManager::Init                             (const std::string& url)
 {
@@ -203,6 +214,19 @@ void    MultimediaManager::NotifyAudioBufferObservers       (uint32_t fillstateI
     for (size_t i = 0; i < this->managerObservers.size(); i++)
         this->managerObservers.at(i)->OnAudioBufferStateChanged(fillstateInPercent);
 }
+
+void    MultimediaManager::NotifySegmentDownloaded			(uint32_t downloadRate) //added function
+{
+    for (size_t i = 0; i < this->managerObservers.size(); i++)
+        this->managerObservers.at(i)->OnSegmentDownloaded(downloadRate);
+}
+
+void    MultimediaManager::NotifyRateChanged (int segmentNumber, uint32_t downloadRate) //added function
+{
+    for (size_t i = 0; i < this->managerObservers.size(); i++)
+        this->managerObservers.at(i)->OnRateChanged(segmentNumber, downloadRate);
+}
+
 void    MultimediaManager::InitVideoRendering               (uint32_t offset)
 {
     this->videoLogic = AdaptationLogicFactory::Create(libdash::framework::adaptation::Manual, this->mpd, this->period, this->videoAdaptationSet);
@@ -221,9 +245,11 @@ void    MultimediaManager::InitAudioPlayback                (uint32_t offset)
     this->audioStream->SetRepresentation(this->period, this->audioAdaptationSet, this->audioRepresentation);
     this->audioStream->SetPosition(offset);
 }
-void    MultimediaManager::OnSegmentDownloaded              ()
+void    MultimediaManager::OnSegmentDownloaded              (uint32_t downloadRate) //added argument
 {
     this->segmentsDownloaded++;
+    //std::cout << "seg downloaded from here " << downloadRate << std::endl;
+    this->NotifySegmentDownloaded(downloadRate); //added
 }
 void    MultimediaManager::OnSegmentBufferStateChanged    (StreamType type, uint32_t fillstateInPercent)
 {
@@ -246,6 +272,32 @@ void    MultimediaManager::OnVideoBufferStateChanged      (uint32_t fillstateInP
 void    MultimediaManager::OnAudioBufferStateChanged      (uint32_t fillstateInPercent)
 {
     this->NotifyAudioBufferObservers(fillstateInPercent);
+}
+void MultimediaManager::OnRateChanged	(int segmentNumber, uint32_t downloadRate){
+	//std::cout << "MMManager #" << segmentNumber << std::endl;
+	static uint64_t segment = 0;
+	uint32_t bw = 0;
+	this->NotifyRateChanged(segmentNumber, downloadRate);
+	const std::vector<IRepresentation *> reps = this->videoAdaptationSet->GetRepresentation();
+	int i;
+	//this->videoRepresentation = reps.at(0);
+	for(i = 0; i < reps.size(); i++){
+		bw = reps.at(i)->GetBandwidth();
+		this->videoRepresentation = reps.at(i);
+		if(bw > downloadRate*8){
+			//bw = reps.at(i-1)->GetBandwidth();
+			break;
+		}
+	}
+	//std::cout << "BW " << bw << " " << downloadRate << std::endl;
+	if(segment != this->segmentsDownloaded || bw - downloadRate*8 > 101492){
+
+		this->SetVideoQuality(this->period, this->videoAdaptationSet, this->videoRepresentation);
+		segment = this->segmentsDownloaded;
+		this->logger->rateLog(this->segmentsDownloaded, bw/8);
+		for (size_t i = 0; i < this->managerObservers.size(); i++)
+			this->managerObservers.at(i)->OnBWChanged(bw);
+	}
 }
 void    MultimediaManager::SetFrameRate                     (double framerate)
 {

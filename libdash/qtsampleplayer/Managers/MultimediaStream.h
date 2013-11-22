@@ -22,6 +22,7 @@
 #include "../libdashframework/Buffer/Buffer.h"
 #include "../libdashframework/Buffer/AudioChunk.h"
 #include <QImage>
+#include "../libdashframework/helpers/LogElement.h"
 
 namespace sampleplayer
 {
@@ -55,8 +56,10 @@ namespace sampleplayer
                 void        EnqueueRepresentation   (dash::mpd::IPeriod *period, dash::mpd::IAdaptationSet *adaptationSet, dash::mpd::IRepresentation *representation);
                 void        SetAdaptationLogic      (libdash::framework::adaptation::IAdaptationLogic *logic);
 
+                const std::vector<libdash::framework::helpers::LogElement *> & getLogs() const;
                 void        AttachStreamObserver    (IStreamObserver *observer);
-
+                void 		OnRateChanged 			(int segmentNumber, uint32_t downloadRate);
+                void		OnSegmentDownloaded     (uint32_t downloadRate); //added
                 void        OnSegmentBufferStateChanged (uint32_t fillstateInPercent);
                 void        OnBufferStateChanged   (libdash::framework::buffer::BufferType type, uint32_t fillstateInPercent);
 

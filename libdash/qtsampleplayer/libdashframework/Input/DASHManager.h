@@ -24,6 +24,8 @@
 #include "IDASHManagerObserver.h"
 #include "../Buffer/AudioChunk.h"
 #include "../Buffer/IMediaObjectBufferObserver.h"
+#include "Logger.h"
+#include "../helpers/LogElement.h"
 
 namespace libdash
 {
@@ -31,7 +33,7 @@ namespace libdash
     {
         namespace input
         {
-            class DASHManager : public IDASHReceiverObserver, public IMediaObjectDecoderObserver, public buffer::IMediaObjectBufferObserver
+            class DASHManager : public IDASHReceiverObserver, public IMediaObjectDecoderObserver, public buffer::IMediaObjectBufferObserver//, public dash::network::IDownloadObserver
             {
                 public:
                     DASHManager             (uint32_t maxCapacity, IDASHManagerObserver *multimediaStream, dash::mpd::IMPD *mpd);
@@ -47,7 +49,10 @@ namespace libdash
                     void        SetRepresentation       (dash::mpd::IPeriod *period, dash::mpd::IAdaptationSet *adaptationSet, dash::mpd::IRepresentation *representation);
                     void        EnqueueRepresentation   (dash::mpd::IPeriod *period, dash::mpd::IAdaptationSet *adaptationSet, dash::mpd::IRepresentation *representation);
 
-                    void        OnSegmentDownloaded     ();
+                    const std::vector<libdash::framework::helpers::LogElement *> & getLogs() const;
+
+                    void		OnDownloadRateChanged   (uint64_t bytesDownloaded);
+                    void 		OnSegmentDownloaded     (uint32_t downloadRate);	//added argument
                     void        OnDecodingFinished      ();
                     void        OnVideoFrameDecoded     (const uint8_t **data, sampleplayer::decoder::videoFrameProperties* props);
                     void        OnAudioSampleDecoded    (const uint8_t **data, sampleplayer::decoder::audioFrameProperties* props);
@@ -62,6 +67,7 @@ namespace libdash
                     uint32_t                    readSegmentCount;
                     IDASHManagerObserver        *multimediaStream;
                     bool                        isRunning;
+                    Logger						*logger;
 
             };
         }

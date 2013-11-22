@@ -17,9 +17,10 @@ using namespace dash::mpd;
 using namespace dash::network;
 using namespace dash::metrics;
 
-MediaObject::MediaObject    (ISegment *segment, IRepresentation *rep) :
+MediaObject::MediaObject    (ISegment *segment, IRepresentation *rep, IMediaObjectObserver *observer) :
              segment        (segment),
-             rep            (rep)
+             rep            (rep),
+             observer		(observer)
 {
     InitializeConditionVariable (&this->stateChanged);
     InitializeCriticalSection   (&this->stateLock);
@@ -84,7 +85,14 @@ void                MediaObject::OnDownloadStateChanged (DownloadState state)
 }
 void                MediaObject::OnDownloadRateChanged  (uint64_t bytesDownloaded)
 {
+	this->downloaded = bytesDownloaded;
+	this->observer->OnDownloadRateChanged(bytesDownloaded);
 }
+
+uint64_t			MediaObject::GetDownloaded(){
+	return this->downloaded;
+}
+
 const std::vector<ITCPConnection *>&    MediaObject::GetTCPConnectionList   () const
 {
     return this->segment->GetTCPConnectionList();

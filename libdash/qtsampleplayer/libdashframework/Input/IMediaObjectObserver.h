@@ -1,5 +1,5 @@
 /*
- * IDASHReceiverObserver.h
+ * IMediaObjectObserver.h
  *****************************************************************************
  * Copyright (C) 2012, bitmovin Softwareentwicklung OG, All Rights Reserved
  *
@@ -9,8 +9,8 @@
  * and conditions of the applicable license agreement.
  *****************************************************************************/
 
-#ifndef LIBDASH_FRAMEWORK_INPUT_IDASHRECEIVEROBSERVER_H_
-#define LIBDASH_FRAMEWORK_INPUT_IDASHRECEIVEROBSERVER_H_
+#ifndef LIBDASH_FRAMEWORK_INPUT_IMEDIAOBJECTOBSERVER_H_
+#define LIBDASH_FRAMEWORK_INPUT_IMEDIAOBJECTOBSERVER_H_
 
 namespace libdash
 {
@@ -18,14 +18,13 @@ namespace libdash
     {
         namespace input
         {
-            class IDASHReceiverObserver
+            class IMediaObjectObserver
             {
                 public:
-                    virtual ~IDASHReceiverObserver () {}
+                    virtual ~IMediaObjectObserver () {}
                     virtual	void OnDownloadRateChanged    (uint64_t bytesDownloaded) = 0;
-                    virtual void OnSegmentDownloaded      (uint32_t downloadRate) = 0;
             };
         }
     }
 }
-#endif /* LIBDASH_FRAMEWORK_INPUT_IDASHRECEIVEROBSERVER_H_ */
+#endif /* LIBDASH_FRAMEWORK_INPUT_IMEDIAOBJECTOBSERVER_H_ */

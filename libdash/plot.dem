@@ -1,0 +1,5 @@
+set title 'CURRENT PLOT'
+set xlabel 'time(s)'
+set ylabel 'rate(B/s)'
+plot "RateLogs.data" with lines, "Logs.data" with lines
+pause -1

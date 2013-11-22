@@ -20,6 +20,8 @@
 #include "../MPD/AdaptationSetStream.h"
 #include "../MPD/IRepresentationStream.h"
 #include "../Portable/MultiThreading.h"
+#include "../helpers/Time.h"
+#include "IMediaObjectObserver.h"
 
 namespace libdash
 {
@@ -27,7 +29,7 @@ namespace libdash
     {
         namespace input
         {
-            class DASHReceiver
+            class DASHReceiver: public IMediaObjectObserver
             {
                 public:
                     DASHReceiver            (dash::mpd::IMPD *mpd, IDASHReceiverObserver *obs, buffer::MediaObjectBuffer *buffer, uint32_t bufferSize);
@@ -46,10 +48,12 @@ namespace libdash
                     void                        SetRepresentation       (dash::mpd::IPeriod *period,
                                                                          dash::mpd::IAdaptationSet *adaptationSet,
                                                                          dash::mpd::IRepresentation *representation);
+                    virtual	void OnDownloadRateChanged    (uint64_t bytesDownloaded);
 
                 private:
                     uint32_t        CalculateSegmentOffset  ();
-                    void            NotifySegmentDownloaded ();
+                    void            NotifySegmentDownloaded (uint32_t downloadRate);	//added argument
+                    void            NotifyDownloadRateChanged   (uint64_t bytesDownloaded);//
                     void            DownloadInitSegment     (dash::mpd::IRepresentation* rep);
                     bool            InitSegmentExists       (dash::mpd::IRepresentation* rep);
 

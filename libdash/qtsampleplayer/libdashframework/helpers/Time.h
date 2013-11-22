@@ -13,16 +13,19 @@
 #define DASH_HELPERS_TIME_H_
 
 #include <time.h>
-#include <string.h>
-
-namespace dash
+#include <string>
+#include "libdash.h"
+#include <sys/time.h>
+namespace libdash
 {
+	namespace framework{
     namespace helpers
     {
         class Time
         {
             public:
                 static uint32_t     GetCurrentUTCTimeInSec  ();
+                static uint64_t	    GetCurrentUTCTimeInMilliSec();
                 static std::string  GetCurrentUTCTimeStr    ();
 
             private:
@@ -30,6 +33,7 @@ namespace dash
 
         };
     }
+	}
 }
 
 #endif /* DASH_HELPERS_TIME_H_ */

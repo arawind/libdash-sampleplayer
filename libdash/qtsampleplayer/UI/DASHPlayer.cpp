@@ -11,10 +11,12 @@
 
 #include "DASHPlayer.h"
 #include <iostream>
+#include <fstream>
 
 using namespace libdash::framework::adaptation;
 using namespace libdash::framework::mpd;
 using namespace libdash::framework::buffer;
+using namespace libdash::framework::helpers;
 using namespace sampleplayer;
 using namespace sampleplayer::renderer;
 using namespace sampleplayer::managers;
@@ -39,6 +41,9 @@ DASHPlayer::DASHPlayer  (QtSamplePlayerGui &gui) :
     QObject::connect(this, SIGNAL(VideoBufferFillStateChanged(int)), &gui, SLOT(SetVideoBufferFillState(int)));
     QObject::connect(this, SIGNAL(AudioSegmentBufferFillStateChanged(int)), &gui, SLOT(SetAudioSegmentBufferFillState(int)));
     QObject::connect(this, SIGNAL(AudioBufferFillStateChanged(int)), &gui, SLOT(SetAudioBufferFillState(int)));
+    QObject::connect(this, SIGNAL(RateChanged(int, unsigned int)), &gui, SLOT(SetRateChangedLabel(int, unsigned int)));
+    QObject::connect(this, SIGNAL(BWChanged(unsigned int)), &gui, SLOT(SetBWChangedLabel(unsigned int)));
+
 }
 DASHPlayer::~DASHPlayer ()
 {
@@ -69,7 +74,39 @@ void DASHPlayer::OnStartButtonPressed               (int period, int videoAdapta
 }
 void DASHPlayer::OnStopButtonPressed                ()
 {
+	this->OnLogsButtonPressed();
     this->multimediaManager->Stop();
+}
+void DASHPlayer::OnLogsButtonPressed                ()
+{
+	ofstream logsFile;
+	uint64_t time = 0;
+	logsFile.open("Logs.data", ios::out | ios::trunc);
+    const std::vector<LogElement*> logs = this->multimediaManager->getLogs();
+    if(logs.size() > 0){
+    	time = logs.at(0)->getStart();
+    	logsFile << 0 << " " << logs.at(0)->getRate() << "\n";
+    	logsFile << logs.at(0)->getDuration()/1000.0 << " " << logs.at(0)->getRate() << "\n";
+    }
+    for(int i=1; i<logs.size(); i++){
+    	logsFile << (logs.at(i)->getStart() - time)/1000.0 << " " << logs.at(i)->getRate() << "\n";
+    	logsFile << (logs.at(i)->getStart() - time + logs.at(i)->getDuration() )/1000.0 << " " << logs.at(i)->getRate() << "\n";
+    	std::cout << "Log: "<< logs.at(i)->getSegmentNumber() << " " << logs.at(i)->getDuration() << " " << logs.at(i)->getRate() << std::endl;
+    }
+    logsFile.close();
+
+    logsFile.open("RateLogs.data", ios::out | ios::trunc);
+    const std::vector<LogElement*> rateLogs = this->multimediaManager->getRateLogs();
+    if(rateLogs.size() > 0)
+    	logsFile << rateLogs.at(0)->getDuration()/1000.0 << " " << rateLogs.at(0)->getRate() << "\n";
+	for(int i=1; i<rateLogs.size(); i++){
+		std::cout << "RateLog: "<< rateLogs.at(i)->getSegmentNumber() << " " << rateLogs.at(i)->getDuration() << " " << rateLogs.at(i)->getRate() << std::endl;
+		if(rateLogs.at(i)->getDuration() > 1)
+			logsFile << (rateLogs.at(i)->getDuration() - 1)/1000.0 << " " << rateLogs.at(i-1)->getRate() << "\n";
+		logsFile << rateLogs.at(i)->getDuration()/1000.0 << " " << rateLogs.at(i)->getRate() << "\n";
+	}
+	logsFile.close();
+
 }
 void DASHPlayer::OnSettingsChanged                  (int period, int videoAdaptationSet, int videoRepresentation, int audioAdaptationSet, int audioRepresentation)
 {
@@ -122,6 +159,21 @@ void DASHPlayer::OnAudioSegmentBufferStateChanged   (uint32_t fillstateInPercent
 {
     emit AudioSegmentBufferFillStateChanged(fillstateInPercent);
 }
+
+void DASHPlayer::OnSegmentDownloaded(uint32_t downloadRate)
+{
+    //std::cout << "downloaded segment "<< downloadRate << std::endl;
+}
+
+void DASHPlayer::OnRateChanged (int segmentNumber, uint32_t downloadRate){
+	//std::cout << "MMPlayer #" << segmentNumber << std::endl;
+	emit RateChanged(segmentNumber, downloadRate);
+}
+void DASHPlayer::OnBWChanged (uint32_t BW){
+	//std::cout << "MMPlayerBW #" << BW << std::endl;
+	emit BWChanged(BW);
+}
+
 void DASHPlayer::OnDownloadMPDPressed               (const std::string &url)
 {
     if(!this->multimediaManager->Init(url))

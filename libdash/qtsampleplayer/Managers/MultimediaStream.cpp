@@ -16,6 +16,7 @@ using namespace sampleplayer::decoder;
 using namespace libdash::framework::adaptation;
 using namespace libdash::framework::input;
 using namespace libdash::framework::buffer;
+using namespace libdash::framework::helpers;
 using namespace dash::mpd;
 
 MultimediaStream::MultimediaStream  (StreamType type, IMPD *mpd, uint32_t bufferSize, uint32_t frameBufferSize, uint32_t sampleBufferSize) :
@@ -101,6 +102,7 @@ QImage*     MultimediaStream::GetFrame                  ()
 {
     return this->frameBuffer->GetFront();
 }
+
 void        MultimediaStream::AddSamples                (AudioChunk *samples)
 {
     this->sampleBuffer->PushBack(samples);
@@ -109,6 +111,11 @@ AudioChunk* MultimediaStream::GetSamples                ()
 {
     return this->sampleBuffer->GetFront();
 }
+
+const std::vector<LogElement *> & MultimediaStream::getLogs() const{
+	return this->dashManager->getLogs();
+}
+
 void        MultimediaStream::AttachStreamObserver      (IStreamObserver *observer)
 {
     this->observers.push_back(observer);
@@ -130,6 +137,17 @@ void        MultimediaStream::OnSegmentBufferStateChanged   (uint32_t fillstateI
     for (size_t i = 0; i < observers.size(); i++)
         this->observers.at(i)->OnSegmentBufferStateChanged(this->type, fillstateInPercent);
 }
+void        MultimediaStream::OnSegmentDownloaded			(uint32_t downloadRate)
+{
+    for (size_t i = 0; i < observers.size(); i++)
+        this->observers.at(i)->OnSegmentDownloaded(downloadRate);
+}
+void 		MultimediaStream::OnRateChanged (int segmentNumber, uint32_t downloadRate){
+	//std::cout << "MMSTREAM #" << segmentNumber << std::endl;
+	for (size_t i = 0; i < observers.size(); i++)
+		this->observers.at(i)->OnRateChanged(segmentNumber, downloadRate);
+}
+
 void        MultimediaStream::OnBufferStateChanged          (BufferType type, uint32_t fillstateInPercent)
 {
     switch(type)

@@ -25,6 +25,7 @@
 #include "../libdashframework/Adaptation/ManualAdaptation.h"
 #include "../libdashframework/Buffer/IBufferObserver.h"
 #include "../libdashframework/MPD/AdaptationSetHelper.h"
+#include "../libdashframework/helpers/LogElement.h"
 
 #include <qimage.h>
 
@@ -51,8 +52,12 @@ namespace sampleplayer
             virtual void OnSettingsChanged      (int period, int videoAdaptationSet, int videoRepresentation, int audioAdaptationSet, int audioRepresentation);
             virtual void OnStartButtonPressed   (int period, int videoAdaptationSet, int videoRepresentation, int audioAdaptationSet, int audioRepresentation);
             virtual void OnStopButtonPressed    ();
+            virtual void OnLogsButtonPressed    ();
 
             /* IMultimediaManagerObserver */
+            virtual void OnSegmentDownloaded        		(uint32_t downloadRate); //added
+            virtual void OnRateChanged		        		(int segmentNumber, uint32_t downloadRate);
+            virtual void OnBWChanged		        		(uint32_t BW);
             virtual void OnVideoBufferStateChanged          (uint32_t fillstateInPercent);
             virtual void OnVideoSegmentBufferStateChanged   (uint32_t fillstateInPercent);
             virtual void OnAudioBufferStateChanged          (uint32_t fillstateInPercent);
@@ -77,6 +82,9 @@ namespace sampleplayer
             void VideoBufferFillStateChanged        (int fillStateInPercent);
             void AudioSegmentBufferFillStateChanged (int fillStateInPercent);
             void AudioBufferFillStateChanged        (int fillStateInPercent);
+            void RateChanged						(int segmentNumber, unsigned int downloadRate);
+            void BWChanged							(unsigned int BW);
+            //void AudioBufferFillStateChanged        (int fillStateInPercent);
 
     };
 }

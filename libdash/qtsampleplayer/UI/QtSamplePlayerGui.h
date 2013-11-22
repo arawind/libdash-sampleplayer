@@ -48,6 +48,7 @@ namespace sampleplayer
             void on_button_mpd_clicked                          ();
             void on_button_start_clicked                        ();
             void on_button_stop_clicked                         ();
+            void on_button_getLogs_clicked                      ();
 
 
         public slots:
@@ -55,6 +56,8 @@ namespace sampleplayer
             virtual void    SetVideoBufferFillState         (int percentage);
             virtual void    SetAudioSegmentBufferFillState  (int percentage);
             virtual void    SetAudioBufferFillState         (int percentage);
+            virtual void    SetRateChangedLabel		        (int segmentNumber, unsigned int downloadRate);
+            virtual void    SetBWChangedLabel		        (unsigned int BW);
 
         private:
             std::map<std::string, std::string>                  keyValues;
@@ -81,6 +84,7 @@ namespace sampleplayer
             void NotifyMPDDownloadPressed   (const std::string &url);
             void NotifyStartButtonPressed   ();
             void NotifyStopButtonPressed    ();
+            void NotifyLogsButtonPressed    ();
 
     };
 }

@@ -16,6 +16,7 @@
 #include "IDownloadObserver.h"
 #include "IDASHMetrics.h"
 #include "../Portable/MultiThreading.h"
+#include "IMediaObjectObserver.h"
 
 namespace libdash
 {
@@ -26,7 +27,7 @@ namespace libdash
             class MediaObject : public dash::network::IDownloadObserver, public dash::metrics::IDASHMetrics
             {
                 public:
-                    MediaObject             (dash::mpd::ISegment *segment, dash::mpd::IRepresentation *rep);
+                    MediaObject             (dash::mpd::ISegment *segment, dash::mpd::IRepresentation *rep, IMediaObjectObserver *observer);
                     virtual ~MediaObject    ();
 
                     bool                        StartDownload       ();
@@ -36,6 +37,7 @@ namespace libdash
                     int                         Peek                (uint8_t *data, size_t len);
                     int                         Peek                (uint8_t *data, size_t len, size_t offset);
                     dash::mpd::IRepresentation* GetRepresentation   ();
+                    uint64_t					GetDownloaded		();	//added
 
                     virtual void    OnDownloadStateChanged  (dash::network::DownloadState state);
                     virtual void    OnDownloadRateChanged   (uint64_t bytesDownloaded);
@@ -49,6 +51,8 @@ namespace libdash
                     dash::mpd::ISegment             *segment;
                     dash::mpd::IRepresentation      *rep;
                     dash::network::DownloadState    state;
+                    uint64_t						downloaded;
+                    IMediaObjectObserver			*observer;
 
                     mutable CRITICAL_SECTION    stateLock;
                     mutable CONDITION_VARIABLE  stateChanged;

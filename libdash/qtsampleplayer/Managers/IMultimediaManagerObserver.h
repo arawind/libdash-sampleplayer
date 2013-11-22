@@ -22,7 +22,9 @@ namespace sampleplayer
         {
             public:
                 virtual ~IMultimediaManagerObserver () {}
-
+                virtual void OnSegmentDownloaded        (uint32_t downloadRate) = 0; //added
+                virtual void OnRateChanged		        (int segmentNumber, uint32_t downloadRate) = 0;
+                virtual void OnBWChanged		        		(uint32_t BW) = 0;
                 virtual void OnVideoBufferStateChanged          (uint32_t fillstateInPercent) = 0;
                 virtual void OnVideoSegmentBufferStateChanged   (uint32_t fillstateInPercent) = 0;
                 virtual void OnAudioBufferStateChanged          (uint32_t fillstateInPercent) = 0;

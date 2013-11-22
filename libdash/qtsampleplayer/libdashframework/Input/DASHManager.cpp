@@ -13,6 +13,7 @@
 
 using namespace libdash::framework::input;
 using namespace libdash::framework::buffer;
+using namespace libdash::framework::helpers;
 using namespace sampleplayer::decoder;
 
 using namespace dash;
@@ -28,7 +29,7 @@ DASHManager::DASHManager        (uint32_t maxCapacity, IDASHManagerObserver* str
 {
     this->buffer    = new MediaObjectBuffer(maxCapacity);
     this->buffer->AttachObserver(this);
-
+    this->logger = new Logger();
     this->receiver  = new DASHReceiver(mpd, this, this->buffer, maxCapacity);
 }
 DASHManager::~DASHManager       ()
@@ -149,14 +150,28 @@ void        DASHManager::OnAudioSampleDecoded   (const uint8_t **data, audioFram
 }
 void        DASHManager::OnBufferStateChanged   (uint32_t fillstateInPercent)
 {
-    this->multimediaStream->OnSegmentBufferStateChanged(fillstateInPercent);
+	this->multimediaStream->OnSegmentBufferStateChanged(fillstateInPercent);
 }
-void        DASHManager::OnSegmentDownloaded    ()
+void        DASHManager::OnSegmentDownloaded    (uint32_t downloadRate)
 {
     this->readSegmentCount++;
-
+    this->multimediaStream->OnSegmentDownloaded(downloadRate);
     // notify observers
 }
+
+void        DASHManager::OnDownloadRateChanged(uint64_t bytesDownloaded)
+{
+    //std::cout << "Rate changed "<< bytesDownloaded <<std::endl;
+    uint32_t rate = this->logger->log((int)this->readSegmentCount, bytesDownloaded);
+    this->multimediaStream->OnRateChanged((int)this->readSegmentCount, rate);
+    //this->multimediaStream->OnSegmentBufferStateChanged(downloadRate);
+    // notify observers
+}
+
+const std::vector<LogElement *> & DASHManager::getLogs() const{
+	return this->logger->getLogs();
+}
+
 void        DASHManager::OnDecodingFinished     ()
 {
     if (this->isRunning)

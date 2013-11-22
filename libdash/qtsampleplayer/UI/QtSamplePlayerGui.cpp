@@ -101,6 +101,17 @@ void            QtSamplePlayerGui::SetAudioBufferFillState                      
 {
     this->ui->progressBar_AC->setValue(percentage);
 }
+void    QtSamplePlayerGui::SetRateChangedLabel		        (int segmentNumber, unsigned int downloadRate){
+	//std::cout << "GUI #" << segmentNumber << std::endl;
+	this->ui->label_segment_speed->setText(QString("# %1 - %2 KiB/s").arg(segmentNumber).arg(downloadRate/1000.0));
+}
+
+void    QtSamplePlayerGui::SetBWChangedLabel		        (unsigned int BW){
+	//std::cout << "GUI #" << segmentNumber << std::endl;
+	this->ui->label_profile->setText(QString("%1 bps").arg(BW));
+}
+
+
 void            QtSamplePlayerGui::AddWidgetObserver                                (IDASHPlayerGuiObserver *observer)
 {
     this->observers.push_back(observer);
@@ -244,6 +255,11 @@ void            QtSamplePlayerGui::NotifyStopButtonPressed                      
     for(size_t i = 0; i < this->observers.size(); i++)
         this->observers.at(i)->OnStopButtonPressed();
 }
+void            QtSamplePlayerGui::NotifyLogsButtonPressed                          ()
+{
+    for(size_t i = 0; i < this->observers.size(); i++)
+        this->observers.at(i)->OnLogsButtonPressed();
+}
 
 /* UI Slots */
 void            QtSamplePlayerGui::on_button_mpd_clicked                            ()
@@ -333,4 +349,9 @@ void            QtSamplePlayerGui::on_button_stop_clicked                       
     this->ui->button_mpd->setDisabled(false);
 
     this->NotifyStopButtonPressed();
+}
+
+void            QtSamplePlayerGui::on_button_getLogs_clicked                           ()
+{
+    this->NotifyLogsButtonPressed();
 }

@@ -29,6 +29,8 @@ namespace libdash
                     virtual void AddFrame       (QImage *frame)                 = 0;
                     virtual void AddSamples     (buffer::AudioChunk *samples)   = 0;
                     //virtual void AddSubtitle    ()  = 0;
+                    virtual void OnRateChanged (int segmentNumber, uint32_t downloadRate) = 0;
+                    virtual void OnSegmentDownloaded    (uint32_t downloadRate)  = 0; //added
                     virtual void OnSegmentBufferStateChanged   (uint32_t fillstateInPercent) = 0;
             };
         }

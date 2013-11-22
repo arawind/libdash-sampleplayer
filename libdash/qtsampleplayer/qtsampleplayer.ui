@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1020</width>
-    <height>685</height>
+    <height>769</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,6 +32,21 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QComboBox" name="cb_mpd">
+         <item>
+          <property name="text">
+           <string>http://127.0.0.1/dash/dash/bunny_actVersion.mpd</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>http://127.0.0.1/dash/MPDs/elephant.mpd</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>http://172.16.46.127/dash/MPDs/ElephantsDream_15s_isoffmain_DIS_23009_1_v_2_1c2_2011_08_30.mpd</string>
+          </property>
+         </item>
          <item>
           <property name="text">
            <string>http://www-itec.aau.at/~cmueller/libdashtest/showcases/big_buck_bunny_480.mpd</string>
@@ -182,7 +197,7 @@
        <item>
         <widget class="QLineEdit" name="lineEdit_mpd">
          <property name="text">
-          <string>http://www-itec.aau.at/~cmueller/libdashtest/showcases/big_buck_bunny_480.mpd</string>
+          <string>http://127.0.0.1/dash/dash/bunny_actVersion.mpd</string>
          </property>
         </widget>
        </item>
@@ -379,6 +394,41 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="button_getLogs">
+            <property name="text">
+             <string>Get Logs</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Downloading Segment: Speed</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_segment_speed">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Current profile</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_profile">
+            <property name="text">
+             <string>default</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="bitmovinLogo">
